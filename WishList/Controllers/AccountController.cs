@@ -35,8 +35,8 @@ namespace WishList.Controllers
             }
 
             ;
-            var result = _userManager.CreateAsync(new ApplicationUser() { UserName = model.Email, Email = model.Email },
-                  model.Password).Result;
+            var result = _userManager.CreateAsync(new ApplicationUser() {UserName = model.Email, Email = model.Email},
+                model.Password).Result;
             if (!result.Succeeded)
             {
                 foreach (var identityError in result.Errors)
@@ -50,5 +50,41 @@ namespace WishList.Controllers
             return RedirectToAction("Index", "Home");
 
         }
-    }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult Login()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public IActionResult Login(LoginViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var result = _signInManager.PasswordSignInAsync(model.Email, model.Password, false, false).Result;
+            if (!result.Succeeded)
+            {
+                ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+                return View(model);
+            }
+
+            return RedirectToAction("Index", "Item");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+
+        public IActionResult Logout()
+        {
+            _signInManager.SignOutAsync();
+            return RedirectToAction("Index", "Home");
+        }
+}
 }
